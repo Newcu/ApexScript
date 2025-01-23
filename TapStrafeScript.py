@@ -12,13 +12,38 @@ TAP_STRAFE_DELAY = 0.01  # Time between directional inputs (in seconds)
 # Toggle script on/off
 script_active = False
 
+# PS5 DualSense Vendor ID and Product ID
+VENDOR_ID = 0x054C  # Sony
+PRODUCT_ID = 0x0CE6  # DualSense
+
+# Open the PS5 controller
+try:
+    device = hid.device()
+    device.open(VENDOR_ID, PRODUCT_ID)
+    print("PS5 Controller connected!")
+except Exception as e:
+    print(f"Failed to connect to PS5 controller: {e}")
+    exit()
+
+# Function to read the left joystick position
+def get_left_stick_position():
+    # Read input data from the controller
+    data = device.read(64)  # Read 64 bytes of data
+    if data:
+        # Extract left joystick X and Y values from the HID report
+        # Note: You'll need to reverse-engineer the HID report format for the DualSense
+        left_stick_x = data[1] / 127.0 - 1  # Normalize to -1 to 1
+        left_stick_y = data[2] / 127.0 - 1  # Normalize to -1 to 1
+        return left_stick_x, left_stick_y
+    return 0.0, 0.0  # Default to neutral position if no data is read
+
 # Function to simulate tap strafe
 def tap_strafe():
     global script_active
     while True:
         if script_active:
             # Read the current left joystick position
-            left_stick_x, left_stick_y = get_left_stick_position()  # You'll need to implement this
+            left_stick_x, left_stick_y = get_left_stick_position()
 
             # Simulate rapid directional inputs
             gamepad.left_joystick_float(x_value_float=left_stick_x, y_value_float=left_stick_y)  # Move in the held direction
@@ -63,8 +88,7 @@ while True:
         time.sleep(0.5)  # Debounce to avoid multiple toggles
 
     # Simulate normal movement
-    # Replace this with your preferred method of reading the left joystick
-    left_stick_x, left_stick_y = get_left_stick_position()  # You'll need to implement this
+    left_stick_x, left_stick_y = get_left_stick_position()
     gamepad.left_joystick_float(x_value_float=left_stick_x, y_value_float=left_stick_y)
     gamepad.update()
 
