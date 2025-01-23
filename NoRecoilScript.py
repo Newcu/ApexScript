@@ -1,53 +1,59 @@
-import hid
-import random
+import vgamepad as vg
 import time
 import threading
 
-# PS5 DualSense Vendor ID and Product ID
-VENDOR_ID = 0x054C  # Sony
-PRODUCT_ID = 0x0CE6  # DualSense
+# Initialize virtual gamepad
+gamepad = vg.VX360Gamepad()
 
-# Jitter settings
-JITTER_INTENSITY = 0.05  # How far the joystick moves (0 to 1)
-JITTER_DELAY = 0.01      # Time between jitter movements (in seconds)
+# Tap strafe settings
+TAP_STRAFE_DELAY = 0.01  # Time between directional inputs (in seconds)
 
 # Toggle script on/off
 script_active = False
 
-# Open the PS5 controller
-try:
-    device = hid.device()
-    device.open(VENDOR_ID, PRODUCT_ID)
-    print("PS5 Controller connected!")
-except Exception as e:
-    print(f"Failed to connect to PS5 controller: {e}")
-    exit()
-
-# Function to jitter the joystick
-def jitter_aim():
+# Function to simulate tap strafe
+def tap_strafe():
     global script_active
     while True:
         if script_active:
-            # Generate random jitter movements
-            jitter_x = random.uniform(-JITTER_INTENSITY, JITTER_INTENSITY)
-            jitter_y = random.uniform(-JITTER_INTENSITY, JITTER_INTENSITY)
+            # Read the current left joystick position
+            left_stick_x, left_stick_y = get_left_stick_position()  # You'll need to implement this
 
-            # Read the current joystick position
-            report = device.read(64)
-            if report:
-                # Extract the current joystick position from the HID report
-                # Note: You'll need to reverse-engineer the HID report format for the DualSense
-                current_x = report[1] / 127.0 - 1  # Normalize to -1 to 1
-                current_y = report[2] / 127.0 - 1  # Normalize to -1 to 1
+            # Simulate rapid directional inputs
+            gamepad.left_joystick_float(x_value_float=left_stick_x, y_value_float=left_stick_y)  # Move in the held direction
+            gamepad.update()
+            time.sleep(TAP_STRAFE_DELAY)
 
-                # Add jitter to the current position
-                new_x = current_x + jitter_x
-                new_y = current_y + jitter_y
+            # Reset joystick to neutral
+            gamepad.left_joystick_float(x_value_float=0.0, y_value_float=0.0)
+            gamepad.update()
+            time.sleep(TAP_STRAFE_DELAY)
+        else:
+            time.sleep(0.1)
 
-                # Clamp the values to the valid range (-1 to 1)
-                new_x = max(-1, min(1, new_x))
-                new_y = max(-1, min(1, new_y))
+# Function to toggle script on/off
+def toggle_script():
+    global script_active
+    script_active = not script_active
+    print(f"Script {'active' if script_active else 'inactive'}")
 
-                # Create a new HID report with the updated joystick position
-                new_report = [0] * 64
-                new
+# Start the tap strafe thread
+tap_strafe_thread = threading.Thread(target=tap_strafe)
+tap_strafe_thread.daemon = True
+tap_strafe_thread.start()
+
+# Main loop
+print("Press 'T' to toggle the script on/off.")
+while True:
+    # Check for button press (e.g., L2 or R2)
+    # Replace this with your preferred button detection method
+    if some_button_pressed():  # You'll need to implement this
+        toggle_script()
+
+    # Simulate normal movement
+    # Replace this with your preferred method of reading the left joystick
+    left_stick_x, left_stick_y = get_left_stick_position()  # You'll need to implement this
+    gamepad.left_joystick_float(x_value_float=left_stick_x, y_value_float=left_stick_y)
+    gamepad.update()
+
+    time.sleep(0.01)  # Small delay to avoid high CPU usage
