@@ -1,14 +1,14 @@
 # ApexScript
 
-Apex Legends Superglide Script For Playstation 5 controller.
+Apex Legends Scripts For Playstation 5 controller.
 
-Key Features of the Code:
+Key Features of the Codes:
 Input Detection:
 - Listens for "L2" (Left Trigger).
 - Waits for 0.2 seconds of continuous hold before triggering the output.
 
 Output Simulation:
-- Simulates "Left Joystick" (Crouch) and "L2" (Jump).
+- Simulates the Superglide or Mantlejump.
 
 Flexibility:
 - You can switch input and output by modifying the button check.
