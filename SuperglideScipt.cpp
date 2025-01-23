@@ -8,58 +8,54 @@ int main() {
     XINPUT_STATE state;
     ZeroMemory(&state, sizeof(XINPUT_STATE));
 
-    bool isHoldingL2 = false;
+    bool isHoldingInput = false;
+    bool isTriggeringOutputs = false;
     auto holdStartTime = std::chrono::steady_clock::now();
 
     while (true) {
         XInputGetState(0, &state); // Get the current controller state
 
-        // Check if L2 is pressed (Left Trigger)
-        if (state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
-            if (!isHoldingL2) {
+        // Check if L2 is pressed (Left Trigger) or Triangle (Y Button)
+        bool isInputPressed = (state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD); // For L2
+        // bool isInputPressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y); // For Triangle
+
+        if (isInputPressed) {
+            if (!isHoldingInput) {
                 // Start the hold timer
-                isHoldingL2 = true;
+                isHoldingInput = true;
                 holdStartTime = std::chrono::steady_clock::now();
             } else {
-                // Check if L2 has been held for 0.2 seconds
+                // Check if the input has been held for 0.2 seconds
                 auto now = std::chrono::steady_clock::now();
                 auto holdDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - holdStartTime).count();
 
                 if (holdDuration >= 200) { // 200ms = 0.2 seconds
-                    std::cout << "L2 held for 0.2 seconds. Triggering Left Joystick Click and L2." << std::endl;
+                    if (!isTriggeringOutputs) {
+                        std::cout << "Input held for 0.2 seconds. Rapidly triggering outputs." << std::endl;
+                        isTriggeringOutputs = true;
+                    }
 
-                    // Simulate Left Joystick Click (Crouch)
-                    state.Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_THUMB;
+                    // Rapidly trigger Left Joystick Click (Crouch) and L2 (Jump)
+                    state.Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_THUMB; // Press Left Joystick Click
+                    state.Gamepad.bLeftTrigger = 255; // Press L2 (Max trigger value)
                     XInputSetState(0, &state);
 
                     // Small delay to simulate a "press"
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Adjust for speed
 
-                    // Release Left Joystick Click
-                    state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_THUMB;
+                    // Release Left Joystick Click and L2
+                    state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_THUMB; // Release Left Joystick Click
+                    state.Gamepad.bLeftTrigger = 0; // Release L2
                     XInputSetState(0, &state);
 
-                    // Simulate L2 (Jump)
-                    // Note: L2 is a trigger, not a button, so we set the trigger value directly
-                    XINPUT_VIBRATION vibration;
-                    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-                    vibration.wLeftMotorSpeed = 65535; // Vibrate left motor
-                    vibration.wRightMotorSpeed = 65535; // Vibrate right motor
-                    XInputSetState(0, &vibration);
-
-                    state.Gamepad.bLeftTrigger = 255; // Max trigger value
-                    XInputSetState(0, &state);
-
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-                    // Release L2
-                    state.Gamepad.bLeftTrigger = 0;
-                    XInputSetState(0, &state);
+                    // Small delay before next trigger
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Adjust for speed
                 }
             }
         } else {
-            // Reset the hold state if L2 is released
-            isHoldingL2 = false;
+            // Reset the hold state if the input is released
+            isHoldingInput = false;
+            isTriggeringOutputs = false;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Small delay to avoid high CPU usage
