@@ -1,6 +1,7 @@
 import vgamepad as vg
 import time
 import threading
+import hid
 
 # Initialize virtual gamepad
 gamepad = vg.VX360Gamepad()
@@ -37,18 +38,29 @@ def toggle_script():
     script_active = not script_active
     print(f"Script {'active' if script_active else 'inactive'}")
 
+# Function to check if a button is pressed
+def some_button_pressed():
+    # Read input data from the controller
+    data = device.read(64)  # Read 64 bytes of data
+    if data:
+        # Example: Check if L2 (Left Trigger) is pressed
+        # Note: You'll need to reverse-engineer the HID report format for the DualSense
+        l2_trigger = data[5]  # Example: Byte 5 represents the L2 trigger
+        return l2_trigger > 0  # Return True if L2 is pressed
+    return False
+
 # Start the tap strafe thread
 tap_strafe_thread = threading.Thread(target=tap_strafe)
 tap_strafe_thread.daemon = True
 tap_strafe_thread.start()
 
 # Main loop
-print("Press 'T' to toggle the script on/off.")
+print("Press L2 to toggle the script on/off.")
 while True:
-    # Check for button press (e.g., L2 or R2)
-    # Replace this with your preferred button detection method
-    if some_button_pressed():  # You'll need to implement this
+    # Check for button press (e.g., L2)
+    if some_button_pressed():
         toggle_script()
+        time.sleep(0.5)  # Debounce to avoid multiple toggles
 
     # Simulate normal movement
     # Replace this with your preferred method of reading the left joystick
