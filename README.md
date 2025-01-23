@@ -3,7 +3,7 @@
 Apex Legends Scripts For Playstation 5 controller.
 
 Flexibility:
-- You can switch input and output by modifying the button check.
+- You can switch input and output by modifying the code.
 
 How to Compile and Run:
 - Save the code to a file.
