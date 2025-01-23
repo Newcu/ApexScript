@@ -35,21 +35,21 @@ int main() {
                         isTriggeringOutputs = true;
                     }
 
-                    // Rapidly trigger Left Joystick Click (Crouch) and L2 (Jump)
-                    state.Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_THUMB; // Press Left Joystick Click
+                    // Rapidly trigger Left Joystick (Crouch) and L2 (Jump)
+                    state.Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_THUMB; // Press Left Joystick
                     state.Gamepad.bLeftTrigger = 255; // Press L2 (Max trigger value)
                     XInputSetState(0, &state);
 
                     // Small delay to simulate a "press"
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Adjust for speed
+                    std::this_thread::sleep_for(std::chrono::milliseconds(4)); // Adjust for speed
 
-                    // Release Left Joystick Click and L2
-                    state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_THUMB; // Release Left Joystick Click
+                    // Release Left Joystick and L2
+                    state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_THUMB; // Release Left Joystick
                     state.Gamepad.bLeftTrigger = 0; // Release L2
                     XInputSetState(0, &state);
 
                     // Small delay before next trigger
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Adjust for speed
+                    std::this_thread::sleep_for(std::chrono::milliseconds(2)); // Adjust for speed
                 }
             }
         } else {
@@ -58,7 +58,7 @@ int main() {
             isTriggeringOutputs = false;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Small delay to avoid high CPU usage
+        std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Small delay to avoid high CPU usage
     }
 
     return 0;
