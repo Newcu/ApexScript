@@ -1,0 +1,61 @@
+#include <windows.h>
+#include <Xinput.h>
+#include <iostream>
+#include <thread>
+#include <chrono>
+
+// Recoil pattern for R-301 (adjust as needed)
+const float r301_recoil_pattern[][2] = {
+    {0.0f, 0.1f},   // Move down slightly
+    {0.05f, 0.1f},  // Move down and slightly right
+    {0.1f, 0.1f},   // Move down and more right
+    // Add more steps as needed
+};
+
+// Toggle script on/off
+bool script_active = false;
+
+// Function to control recoil
+void control_recoil() {
+    while (true) {
+        if (script_active) {
+            for (const auto& step : r301_recoil_pattern) {
+                // Simulate right stick movement
+                XINPUT_STATE state;
+                ZeroMemory(&state, sizeof(XINPUT_STATE));
+                state.Gamepad.sThumbRX = static_cast<SHORT>(step[0] * 32767); // X-axis
+                state.Gamepad.sThumbRY = static_cast<SHORT>(step[1] * 32767); // Y-axis
+                XInputSetState(0, &state);
+
+                // Small delay to simulate a "press"
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+}
+
+// Function to toggle script on/off
+void toggle_script() {
+    script_active = !script_active;
+    std::cout << "Script " << (script_active ? "active" : "inactive") << std::endl;
+}
+
+int main() {
+    // Start the recoil control thread
+    std::thread recoil_thread(control_recoil);
+    recoil_thread.detach();
+
+    // Main loop
+    std::cout << "Press 'T' to toggle the script on/off." << std::endl;
+    while (true) {
+        if (GetAsyncKeyState('T') & 0x8000) { // Check if 'T' is pressed
+            toggle_script();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Debounce
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    return 0;
+}
