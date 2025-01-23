@@ -16,8 +16,6 @@ Flexibility:
 How to Compile and Run:
 - Save the code to a file.
 - Compile the code using a C++ compiler with XInput linked:
-  - bash
-  - Copy
   - g++ apex_controller.cpp -o apex_controller -lXinput
   
 Run the executable:
