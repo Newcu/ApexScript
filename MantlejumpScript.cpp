@@ -11,6 +11,9 @@ int main() {
     bool isHoldingInput = false;
     auto holdStartTime = std::chrono::steady_clock::now();
 
+    // Adjust this delay to match the timing of your mantle jumps
+    const int jumpDelayMs = 150; // Example: 150ms delay
+
     while (true) {
         XInputGetState(0, &state); // Get the current controller state
 
@@ -24,12 +27,12 @@ int main() {
                 isHoldingInput = true;
                 holdStartTime = std::chrono::steady_clock::now();
             } else {
-                // Check if the input has been held for 0.2 seconds
+                // Check if the input has been held for the configured delay
                 auto now = std::chrono::steady_clock::now();
                 auto holdDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - holdStartTime).count();
 
-                if (holdDuration >= 200) { // 200ms = 0.2 seconds
-                    std::cout << "Input held for 0.2 seconds. Simulating mantle jump." << std::endl;
+                if (holdDuration >= jumpDelayMs) { // Use the configured delay
+                    std::cout << "Input held for " << jumpDelayMs << "ms. Simulating mantle jump." << std::endl;
 
                     // Simulate a jump to cancel the mantle
                     state.Gamepad.wButtons |= XINPUT_GAMEPAD_A; // Press Jump (A button)
@@ -41,6 +44,9 @@ int main() {
                     // Release Jump
                     state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_A;
                     XInputSetState(0, &state);
+
+                    // Reset the hold state to allow repeated jumps
+                    isHoldingInput = false;
                 }
             }
         } else {
